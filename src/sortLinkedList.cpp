@@ -17,34 +17,81 @@ struct node {
 	int num;
 	struct node *next;
 };
-void swap(struct node *a, struct node *b)
+
+struct node *get_tail(struct node *cur)
 {
-	int temp = a->num;
-	a->num = b->num;
-	b->num = temp;
+	while (cur != NULL && cur->next != NULL)
+		cur = cur->next;
+	return cur;
 }
-struct node * sortLinkedList(struct node *head) {
-	if (head == NULL)
-		return NULL;
-	if (head->next == NULL)
+struct node *partition(struct node *head, struct node *end, struct node **newhead, struct node **newend)
+{
+	struct node *pivot = end;
+	struct node *prev = NULL, *cur = head, *tail = pivot;
+	while (cur != pivot)
+	{
+		if (cur->num < pivot->num)
+		{
+			if ((*newhead) == NULL)
+				(*newhead) = cur;
+			prev = cur;
+			cur = cur->next;
+		}
+		else
+		{
+			if (prev)
+				prev->next = cur->next;
+			struct node *temp = cur->next;
+			cur->next = NULL;
+			tail->next = cur;
+			tail = cur;
+			cur = temp;
+		}
+	}
+	if ((*newhead) == NULL)
+		(*newhead) = pivot;
+	(*newend) = tail;
+
+	return pivot;
+}
+
+struct node *quickSort1(struct node *head, struct node *end)
+{
+	if (!head || head == end)
 		return head;
 
-	struct node * temp = head, *tail = NULL;
-	int count = 0, x = 1;
-	while (x)
+	node *newhead = NULL, *newend = NULL;
+	struct node *pivot = partition(head, end, &newhead, &newend);
+	if (newhead != pivot)
 	{
-		x = 0;
-		temp = head;
-		while (temp->next != tail)
-		{
-			if (temp->num > temp->next->num)
-			{
-				swap(temp, temp->next);
-				x = 1;
-			}
-			temp = temp->next;
-		}
-		tail = temp;
+		struct node *tmp = newhead;
+		while (tmp->next != pivot)
+			tmp = tmp->next;
+		tmp->next = NULL;
+		newhead = quickSort1(newhead, tmp);
+		tmp = get_tail(newhead);
+		tmp->next = pivot;
 	}
-	return head;
+	pivot->next = quickSort1(pivot->next, newend);
+
+	return newhead;
+}
+
+struct node * quickSort(struct node **headRef)
+{
+	(*headRef) = quickSort1(*headRef, get_tail(*headRef));
+	return *headRef;
+}
+
+struct node * sortLinkedList(struct node * head)
+{
+	if (!head)
+		return NULL;
+	else if (head->next == NULL)
+		return head;
+	struct node * temp = head;
+	struct node * temp1 = NULL;
+
+	temp1 = quickSort(&head);
+	return temp1;
 }
